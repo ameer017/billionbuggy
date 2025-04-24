@@ -1,13 +1,24 @@
 import { useState } from "react";
 
 export default function UserList() {
-  const [users] = useState(["Alice", "Bob", "Charlie"]);
+  const [users, setUsers] = useState(["Alice", "Bob", "Charlie"]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const showDetail = selectedUser !== null ? true : false;
+  //   Removes a user by index.
+  // Uses the functional form of setUsers to ensure safe state updates.
+  // Filters out the user at the provided index.
 
-  const filteredUsers = users.filter((user) => user === searchTerm);
+  const handleDelete = (index) => {
+    setUsers((prevUsers) => prevUsers.filter((_, i) => i !== index));
+  };
+
+  const showDetails = selectedUser !== null;
+  const filteredUsers = users.filter((user) => {
+    const term = searchTerm.toLowerCase();
+
+    return user.toLowerCase().includes(term);
+  });
 
   const handleHover = (user) => {
     setTimeout(() => {
@@ -16,16 +27,21 @@ export default function UserList() {
   };
 
   return (
-    <div className="mt-4">
+    <div className="mt-4 flex items-center justify-center flex-col w-full">
       <h2 className="text-xl font-bold">Users</h2>
 
-      <input type="text" value={searchTerm} className="border p-2 mt-2" />
+      <input
+        type="text"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="border p-2 mt-2"
+      />
 
-      <ul>
+      <ul className="flex my-10 gap-5">
         {(filteredUsers.length > 0 ? filteredUsers : users).map(
           (user, index) => (
             <li
-              key={index + Math.random()}
+              key={`${user}-${index}`}
               onClick={() => {
                 setSelectedUser(user);
               }}
@@ -35,12 +51,10 @@ export default function UserList() {
               {user}
               <button
                 onClick={(e) => {
-                  e.stopPropagation();
-                  const newUsers = [...users];
-                  newUsers.splice(index, 1);
-                  setUsers(newUsers);
+                  e.stopPropagation(); // prevent selecting the user when delete is clicked
+                  handleDelete(index);
                 }}
-                className="ml-2 bg-red-500 text-white px-2 py-1 rounded"
+                className="bg-red-500 text-white px-2 py-1 rounded ml-1"
               >
                 Delete
               </button>
